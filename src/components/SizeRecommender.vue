@@ -27,6 +27,9 @@
           <h2>您的尺码推荐：</h2>
           <div class="recommendation">
             <div class="size">
+              <h1>{{ looseSize }}</h1>
+            </div>
+            <div class="size">
               <h1>{{ recommendedSize }}</h1>
             </div>
           </div>
@@ -80,7 +83,7 @@ export default defineComponent({
     const weight = ref<number | null>(null);
     const showResult = ref(false);
     const recommendedSize = ref<string>('');
-
+    const looseSize = ref<string>('');
     // 尺码推荐表数据
     const sizeTable = [
       { heightRange: [145, 155], weightRange: [35, 40], size: 'S/M' },
@@ -152,6 +155,8 @@ export default defineComponent({
       { heightRange: [210, 220], weightRange: [100, 110], size: '7XL' },
       { heightRange: [210, 220], weightRange: [110, 120], size: '7XL' },
     ];
+// 尺码顺序
+    const sizeOrder = ['S/M', 'M', 'M/L', 'L', 'L/XL', 'XL', 'XL/2XL', '2XL', '2XL/3XL', '3XL', '3XL/4XL', '4XL', '4XL/5XL', '5XL', '5XL/6XL', '6XL', '6XL/7XL', '7XL'];
 
     // 计算推荐尺码
     const calculateSize = (height: number, weight: number): string => {
@@ -168,6 +173,13 @@ export default defineComponent({
     const handleSubmit = () => {
       if (height.value && weight.value) {
         recommendedSize.value = calculateSize(height.value, weight.value);
+        // 计算 looseSize
+        const currentIndex = sizeOrder.indexOf(recommendedSize.value);
+        if (currentIndex !== -1 && currentIndex < sizeOrder.length - 1) {
+          looseSize.value = sizeOrder[currentIndex + 1]; // 下一个尺码
+        } else {
+          looseSize.value = null; // 没有下一个尺码
+        }
         showResult.value = true;
       }
     };
@@ -176,6 +188,7 @@ export default defineComponent({
       height.value = null;
       weight.value = null;
       recommendedSize.value = '';
+      looseSize.value = '';
       showResult.value = false;
     };
 
@@ -184,6 +197,7 @@ export default defineComponent({
       weight,
       showResult,
       recommendedSize,
+      looseSize,
       handleSubmit,
       resetForm,
     };
@@ -210,11 +224,13 @@ export default defineComponent({
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   color: black;
-  transition: all 0.5s ease-in-out;
+  transition: all 1.2s ease-in-out; /* 添加过渡效果 */
+  overflow: hidden; /* 确保内容不会溢出 */
 }
 
 .recommender-box.expanded {
   width: 500px;
+  height: auto;
 }
 
 .form-group {
@@ -286,6 +302,23 @@ button:hover {
 
 .detail-item p {
   margin: 0;
+}
+
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 1.2s ease;
+}
+
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.fade-slide-enter-to,
+.fade-slide-leave-from {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 </style>

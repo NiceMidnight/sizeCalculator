@@ -22,10 +22,14 @@
       </form>
 
       <!-- 推荐结果 -->
-      <transition name="fade-slide">
+      <transition name="fade-slide" @before-enter="beforeEnter" @enter="enter" @leave="leave">
         <div class="result-section" v-if="showResult">
           <h2>您的尺码推荐：</h2>
           <div class="recommendation">
+            <div class="size">
+              <h1>{{ looseSize }}</h1>
+            </div>
+            <hr>
             <div class="size">
               <h1>{{ recommendedSize }}</h1>
             </div>
@@ -72,6 +76,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
+import {size, sizeArray} from "@/components/Size";
 
 export default defineComponent({
   name: 'SizeRecommender',
@@ -80,80 +85,19 @@ export default defineComponent({
     const weight = ref<number | null>(null);
     const showResult = ref(false);
     const recommendedSize = ref<string>('');
+    const looseSize = ref<string>('');
 
-    // 尺码推荐表数据
-    const sizeTable = [
-      { heightRange: [145, 155], weightRange: [35, 40], size: 'S/M' },
-      { heightRange: [145, 155], weightRange: [40, 45], size: 'M' },
-      { heightRange: [145, 155], weightRange: [45, 55], size: 'L' },
-      { heightRange: [145, 155], weightRange: [55, 60], size: 'L' },
+    const sizeTable = size;
+    const getNextSize = (currentSize: string): string => {
+      const sizes = sizeArray;
 
-      { heightRange: [155, 165], weightRange: [40, 45], size: 'M' },
-      { heightRange: [155, 165], weightRange: [45, 55], size: 'M/L' },
-      { heightRange: [155, 165], weightRange: [55, 60], size: 'L' },
-      { heightRange: [155, 165], weightRange: [60, 70], size: 'XL' },
+      const currentIndex = sizes.indexOf(currentSize);
+      if (currentIndex !== -1 && currentIndex < sizes.length - 1) {
+        return sizes[currentIndex + 1];
+      }
+      return currentSize;
+    };
 
-      { heightRange: [165, 170], weightRange: [45, 55], size: 'L/XL' },
-      { heightRange: [165, 170], weightRange: [55, 60], size: 'XL' },
-      { heightRange: [165, 170], weightRange: [60, 70], size: '2XL' },
-      { heightRange: [165, 170], weightRange: [70, 80], size: '2XL' },
-
-      { heightRange: [170, 175], weightRange: [40, 45], size: 'XL' },
-      { heightRange: [170, 175], weightRange: [45, 55], size: 'XL' },
-      { heightRange: [170, 175], weightRange: [55, 60], size: 'XL/2XL' },
-      { heightRange: [170, 175], weightRange: [60, 70], size: '2XL' },
-      { heightRange: [170, 175], weightRange: [70, 80], size: '3XL' },
-      { heightRange: [170, 175], weightRange: [80, 90], size: '3XL' },
-
-      { heightRange: [175, 180], weightRange: [40, 45], size: 'XL' },
-      { heightRange: [175, 180], weightRange: [45, 55], size: '2XL' },
-      { heightRange: [175, 180], weightRange: [55, 60], size: '2XL' },
-      { heightRange: [175, 180], weightRange: [60, 70], size: '2XL/3XL' },
-      { heightRange: [175, 180], weightRange: [70, 80], size: '3XL' },
-      { heightRange: [175, 180], weightRange: [80, 90], size: '4XL' },
-      { heightRange: [175, 180], weightRange: [90, 100], size: '4XL' },
-
-      { heightRange: [180, 185], weightRange: [45, 55], size: '2XL' },
-      { heightRange: [180, 185], weightRange: [55, 60], size: '3XL' },
-      { heightRange: [180, 185], weightRange: [60, 70], size: '3XL' },
-      { heightRange: [180, 185], weightRange: [70, 80], size: '3XL/4XL' },
-      { heightRange: [180, 185], weightRange: [80, 90], size: '4XL' },
-      { heightRange: [180, 185], weightRange: [90, 100], size: '5XL' },
-      { heightRange: [180, 185], weightRange: [100, 110], size: '5XL' },
-
-      { heightRange: [185, 195], weightRange: [45, 55], size: '2XL' },
-      { heightRange: [185, 195], weightRange: [55, 60], size: '3XL' },
-      { heightRange: [185, 195], weightRange: [60, 70], size: '4XL' },
-      { heightRange: [185, 195], weightRange: [70, 80], size: '4XL' },
-      { heightRange: [185, 195], weightRange: [80, 90], size: '4XL/5XL' },
-      { heightRange: [185, 195], weightRange: [90, 100], size: '5XL' },
-      { heightRange: [185, 195], weightRange: [100, 110], size: '6XL' },
-      { heightRange: [185, 195], weightRange: [110, 120], size: '6XL' },
-
-      { heightRange: [195, 200], weightRange: [55, 60], size: '3XL' },
-      { heightRange: [195, 200], weightRange: [60, 70], size: '4XL' },
-      { heightRange: [195, 200], weightRange: [70, 80], size: '5XL' },
-      { heightRange: [195, 200], weightRange: [80, 90], size: '5XL' },
-      { heightRange: [195, 200], weightRange: [90, 100], size: '5XL/6XL' },
-      { heightRange: [195, 200], weightRange: [100, 110], size: '6XL' },
-      { heightRange: [195, 200], weightRange: [110, 120], size: '7XL' },
-
-      { heightRange: [200, 210], weightRange: [60, 70], size: '4XL' },
-      { heightRange: [200, 210], weightRange: [70, 80], size: '5XL' },
-      { heightRange: [200, 210], weightRange: [80, 90], size: '6XL' },
-      { heightRange: [200, 210], weightRange: [90, 100], size: '6XL' },
-      { heightRange: [200, 210], weightRange: [100, 110], size: '6XL/7XL' },
-      { heightRange: [200, 210], weightRange: [110, 120], size: '7XL' },
-
-      { heightRange: [210, 220], weightRange: [60, 70], size: '5XL' },
-      { heightRange: [210, 220], weightRange: [70, 80], size: '6XL' },
-      { heightRange: [210, 220], weightRange: [80, 90], size: '7XL' },
-      { heightRange: [210, 220], weightRange: [90, 100], size: '7XL' },
-      { heightRange: [210, 220], weightRange: [100, 110], size: '7XL' },
-      { heightRange: [210, 220], weightRange: [110, 120], size: '7XL' },
-    ];
-
-    // 计算推荐尺码
     const calculateSize = (height: number, weight: number): string => {
       const entry = sizeTable.find(
           (entry) =>
@@ -168,6 +112,7 @@ export default defineComponent({
     const handleSubmit = () => {
       if (height.value && weight.value) {
         recommendedSize.value = calculateSize(height.value, weight.value);
+        looseSize.value = getNextSize(recommendedSize.value);
         showResult.value = true;
       }
     };
@@ -179,13 +124,37 @@ export default defineComponent({
       showResult.value = false;
     };
 
+    const beforeEnter = (el: any) => {
+      el.style.opacity = 0;
+      el.style.transform = 'scale(0.9)';
+    };
+
+    const enter = (el: any, done: Function) => {
+      el.offsetHeight; // Trigger reflow to ensure animation works
+      el.style.transition = 'opacity 2.3s, transform 3.3s';
+      el.style.opacity = 1;
+      el.style.transform = 'scale(1)';
+      done();
+    };
+
+    const leave = (el: any, done: Function) => {
+      el.style.transition = 'opacity 2.3s, transform 3.3s';
+      el.style.opacity = 0;
+      el.style.transform = 'scale(0.9)';
+      done();
+    };
+
     return {
       height,
       weight,
       showResult,
       recommendedSize,
+      looseSize,
       handleSubmit,
       resetForm,
+      beforeEnter,
+      enter,
+      leave,
     };
   },
 });
@@ -196,7 +165,7 @@ export default defineComponent({
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 90vh;
   background-color: #2c3e50;
   color: white;
   padding: 20px;
@@ -210,13 +179,26 @@ export default defineComponent({
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   color: black;
-  transition: all 0.5s ease-in-out;
+  transition: transform 1s ease-in-out; /* 使用transform控制拉伸效果 */
+  transform-origin: center; /* 确保从中心开始扩展 */
 }
 
 .recommender-box.expanded {
-  width: 500px;
+  transform: scale(1.2); /* 容器放大1.2倍 */
 }
+h2 {
+  text-align: center;
+  color: #e74c3c; /* 红色标题 */
+  text-transform: uppercase;
 
+}
+h1 {
+  font-weight: bold;
+  background: linear-gradient(to right, #e74c3c, #1243f3);
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: textGlow 2s ease-in-out infinite alternate;
+}
 .form-group {
   margin-bottom: 15px;
 }
@@ -254,7 +236,7 @@ button:hover {
 
 .result-section {
   margin-top: 20px;
-  text-align: center; /* 确保内容水平居中 */
+  text-align: center;
 }
 
 .recommendation {
@@ -288,4 +270,14 @@ button:hover {
   margin: 0;
 }
 
+/* 过渡效果 */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: opacity 4.5s, transform 6.5s;
+}
+
+.fade-slide-enter, .fade-slide-leave-to {
+  opacity: 0;
+  transform: scale(1);
+}
 </style>
